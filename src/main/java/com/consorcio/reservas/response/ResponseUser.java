@@ -6,6 +6,6 @@ import lombok.Data;
 import java.util.List;
 @Data
 public class ResponseUser {
-    private List<Usuario> responseUserData;
-    private List<ResponseUserError> responseUserError;
+    private List<Usuario> data;
+    private List<ResponseError> errors;
 }

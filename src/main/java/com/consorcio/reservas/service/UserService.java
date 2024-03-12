@@ -2,15 +2,22 @@ package com.consorcio.reservas.service;
 
 import com.consorcio.reservas.response.Response;
 import com.consorcio.reservas.response.ResponseData;
-import com.consorcio.reservas.model.ResponseError;
+import com.consorcio.reservas.response.ResponseError;
 import com.consorcio.reservas.model.Usuario;
 import com.consorcio.reservas.repository.UsuarioRepository;
+import com.consorcio.reservas.response.ResponseUser;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.mongodb.MongoSocketException;
 import com.mongodb.MongoWriteException;
+import jakarta.ws.rs.NotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 @Service
 public class UserService {
@@ -19,11 +26,24 @@ public class UserService {
     @Autowired
     private UsuarioRepository usuarioRepository;
 
-    public Usuario getUser(String email){
-        Usuario user = new Usuario();
-
-
-        return user;
+    public ResponseUser getUser(String email) {
+        ResponseUser response = new ResponseUser();
+        List<Usuario> responseUserList = new ArrayList<>();
+        ResponseError responseError = new ResponseError();
+        try{
+            Optional<Usuario> user = usuarioRepository.findByMail(email);
+            if (user.isPresent()){
+                Usuario userFound = user.get();
+                responseUserList.add(userFound);
+                response.setData(responseUserList);
+            }
+        } catch (Exception e){
+            responseError.setMessage(e.getMessage());
+            List<ResponseError> responseErrorsList = new ArrayList<>();
+            responseErrorsList.add(responseError);
+            response.setErrors(responseErrorsList);
+        }
+        return response;
     }
 
     public Response createUser(Usuario user) {
@@ -53,13 +73,26 @@ public class UserService {
         return response;
     }
 
-    public Usuario updateUser(Usuario user){
-        Usuario usuarioActual;
+    public Response updateUser(Usuario user){
 
+        Response response = new Response();
+        ResponseError responseError = new ResponseError();
+        ResponseData  responseData = new ResponseData();
+        Usuario usuarioActual = getUser(user.getMail()).getData().get(0);
+        if(usuarioActual != null){
+            usuarioActual.setNombre(user.getNombre());
+            usuarioActual.setApellido(user.getApellido());
+            usuarioActual.setDepto(user.getDepto());
+            usuarioActual.setMail(user.getMail());
+            usuarioRepository.save(usuarioActual);
+            responseData.setMessage("Usuario actualizado correctamente");
+            response.setData(responseData);
+        }else{
 
-        Usuario usuarioModificado = new Usuario();
-
-        return usuarioModificado;
+            responseError.setMessage("El usuario no existe");
+            response.setErrors(responseError);
+        }
+        return response;
     }
 
     public void deleteUser (Usuario usuario) {

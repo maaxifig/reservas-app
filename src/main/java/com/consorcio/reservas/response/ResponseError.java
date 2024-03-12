@@ -1,4 +1,4 @@
-package com.consorcio.reservas.model;
+package com.consorcio.reservas.response;
 
 import lombok.Data;
 

@@ -2,7 +2,7 @@ package com.consorcio.reservas.controller;
 
 import com.consorcio.reservas.response.Response;
 import com.consorcio.reservas.response.ResponseData;
-import com.consorcio.reservas.model.ResponseError;
+import com.consorcio.reservas.response.ResponseError;
 import com.consorcio.reservas.model.Usuario;
 import com.consorcio.reservas.response.ResponseUser;
 import com.consorcio.reservas.service.UserService;
@@ -35,20 +35,10 @@ public class UserController {
 
     @GetMapping("/{email}")
     public ResponseEntity<ResponseUser> getUser(@PathVariable String email) throws JsonProcessingException {
-        ResponseUser res = new ResponseUser();
-        Usuario user = new Usuario(); //userService.getUser(email);
-        user.setDepto("asd");
-        user.setNombre("vasa");
-        user.setApellido("afdg");
-        List<Usuario> responseUserList = new ArrayList<>();
-        responseUserList.add(user);
-        res.setResponseUserData(responseUserList);
+        ResponseUser res = userService.getUser(email);
 //        String json = objectMapper.writeValueAsString(user);
-//        responseData.setMessage(json);
-//        res.setData(responseData);
 
-
-        return new ResponseEntity<>(res, HttpStatus.OK);
+        return new ResponseEntity<>(res, getStatusCode(res));
     }
 
 
@@ -60,10 +50,11 @@ public class UserController {
 
     }
 
-    @PutMapping("/update")
-    public void updateUser(@RequestBody Usuario user){
+    @PutMapping("")
+    public ResponseEntity<Response> updateUser(@RequestBody Usuario user){
 
-        userService.updateUser(user);
+       Response res = userService.updateUser(user);
+        return new ResponseEntity<>(res, getStatusCode(res));
     }
 
     @DeleteMapping("/delete")
@@ -77,6 +68,21 @@ public class UserController {
     private HttpStatus getStatusCode(Response response){
         ResponseError error = response.getErrors();
         ResponseData data = response.getData();
+        if(error == null && data == null){
+            return HttpStatus.NO_CONTENT;
+        }
+        if(error != null){
+            if(data != null){
+                return HttpStatus.CREATED;
+            }
+            return HttpStatus.INTERNAL_SERVER_ERROR;
+        }
+        return HttpStatus.OK;
+    }
+
+    private HttpStatus getStatusCode(ResponseUser response){
+        List<ResponseError> error = response.getErrors();
+        List<Usuario> data = response.getData();
         if(error == null && data == null){
             return HttpStatus.NO_CONTENT;
         }
