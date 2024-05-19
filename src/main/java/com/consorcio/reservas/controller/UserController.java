@@ -64,7 +64,12 @@ public class UserController {
 
 
 
+    @PostMapping("/login")
+    public ResponseEntity<Response> login(@RequestBody String json){
+        Response res = userService.login(json);
 
+        return new ResponseEntity<>(res, getStatusCode(res));
+    }
     private HttpStatus getStatusCode(Response response){
         ResponseError error = response.getErrors();
         ResponseData data = response.getData();

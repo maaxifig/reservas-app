@@ -7,6 +7,8 @@ import com.consorcio.reservas.model.Usuario;
 import com.consorcio.reservas.repository.UsuarioRepository;
 import com.consorcio.reservas.response.ResponseUser;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.MongoSocketException;
 import com.mongodb.MongoWriteException;
 import jakarta.ws.rs.NotFoundException;
@@ -15,6 +17,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -25,6 +28,9 @@ public class UserService {
     private static final Logger logger = LoggerFactory.getLogger(UserService.class);
     @Autowired
     private UsuarioRepository usuarioRepository;
+
+    @Autowired
+    private ObjectMapper objectMapper;
 
     public ResponseUser getUser(String email) {
         ResponseUser response = new ResponseUser();
@@ -97,5 +103,35 @@ public class UserService {
 
     public void deleteUser (Usuario usuario) {
         //usuario.delete()
+    }
+
+    public Response login (String json){
+        Response resp = new Response();
+        ResponseData data = new ResponseData();
+        ResponseError error = new ResponseError();
+
+        try {
+            JsonNode jsonParsed = objectMapper.readTree(json);
+            String email = jsonParsed.path("email").asText();
+            Optional<Usuario> user = usuarioRepository.findByMail(email);
+            if (user.isPresent()){
+                Usuario userFound = user.get();
+                if(userFound.validatePassword(jsonParsed.path(("password")).asText())){
+                    data.setMessage("Logueado correctamente");
+                    resp.setData(data);
+                } else {
+                    error.setMessage("Usuario o contraseña incorrecto");
+                    resp.setErrors(error);
+                }
+
+            }
+
+        } catch (IOException e){
+            error.setMessage("Hubo un error desconocido");
+            resp.setErrors(error);
+        }
+
+
+        return resp;
     }
 }

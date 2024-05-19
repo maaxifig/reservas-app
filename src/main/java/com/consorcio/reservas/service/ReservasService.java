@@ -1,13 +1,34 @@
 package com.consorcio.reservas.service;
 
 import com.consorcio.reservas.model.Reserva;
+import com.consorcio.reservas.repository.ReservaRepository;
+import com.consorcio.reservas.response.Response;
+import com.consorcio.reservas.response.ResponseData;
+import com.consorcio.reservas.response.ResponseError;
+import org.springframework.beans.factory.annotation.Autowired;
 
 public class ReservasService {
 
-    public Reserva createReserva(){
-        Reserva reserva = new Reserva();
+    @Autowired
+    ReservaRepository reservaRepository;
 
-        return reserva;
+
+    public Response createReserva(Reserva reserva){
+
+        Response response = new Response();
+        ResponseError responseError = new ResponseError();
+
+        try{
+            reservaRepository.save(reserva);
+            ResponseData responseData = new ResponseData();
+            responseData.setMessage("Reserva creada correctamente");
+            response.setData(responseData);
+        } catch (Exception e){
+            responseError.setMessage(e.getMessage());
+            response.setErrors(responseError);
+        }
+
+        return response;
     }
 
     public Reserva updateReserva(Reserva reserva){

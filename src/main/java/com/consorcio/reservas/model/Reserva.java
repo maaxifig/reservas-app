@@ -4,6 +4,8 @@ import jakarta.persistence.Id;
 import lombok.Data;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.util.Date;
+
 @Data
 @Document(collection = "Reservas")
 public class Reserva {
@@ -11,7 +13,7 @@ public class Reserva {
     @Id
     private String id;
     private String nombre;
-    private String date;
+    private Date date;
     private String depto;
-    private String turno;
+    private byte[] comprobanteDePago;
 }
