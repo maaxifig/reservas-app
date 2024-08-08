@@ -32,7 +32,6 @@ public class UserController {
 
     private static final Logger logger = LoggerFactory.getLogger(UserController.class);
 
-
     @GetMapping("/{email}")
     public ResponseEntity<ResponseUser> getUser(@PathVariable String email) throws JsonProcessingException {
         ResponseUser res = userService.getUser(email);
@@ -40,7 +39,6 @@ public class UserController {
 
         return new ResponseEntity<>(res, getStatusCode(res));
     }
-
 
     @PostMapping("/create")
     public ResponseEntity<Response> createUser (@RequestBody Usuario user){
@@ -58,11 +56,10 @@ public class UserController {
     }
 
     @DeleteMapping("/delete")
-    public void deleteUser(@RequestBody Usuario user){
-        userService.deleteUser(user);
+    public ResponseEntity<Response> deleteUser(@RequestParam String email){
+        Response res = userService.deleteUser(email);
+        return new ResponseEntity<>(res,getStatusCode(res));
     }
-
-
 
     @PostMapping("/login")
     public ResponseEntity<Response> login(@RequestBody String json){
@@ -71,13 +68,13 @@ public class UserController {
         return new ResponseEntity<>(res, getStatusCode(res));
     }
     private HttpStatus getStatusCode(Response response){
-        ResponseError error = response.getErrors();
-        ResponseData data = response.getData();
-        if(error == null && data == null){
+        List<ResponseError> errors = response.getErrors();
+        List<ResponseData> data = response.getData();
+        if(errors.isEmpty() && data.isEmpty()){
             return HttpStatus.NO_CONTENT;
         }
-        if(error != null){
-            if(data != null){
+        if(!errors.isEmpty()){
+            if(!data.isEmpty()){
                 return HttpStatus.CREATED;
             }
             return HttpStatus.INTERNAL_SERVER_ERROR;
@@ -91,14 +88,12 @@ public class UserController {
         if(error == null && data == null){
             return HttpStatus.NO_CONTENT;
         }
-        if(error != null){
-            if(data != null){
+        if(!error.isEmpty()){
+            if(!data.isEmpty()){
                 return HttpStatus.CREATED;
             }
             return HttpStatus.INTERNAL_SERVER_ERROR;
         }
         return HttpStatus.OK;
     }
-
-
 }

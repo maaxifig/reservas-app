@@ -7,6 +7,9 @@ import com.consorcio.reservas.response.ResponseData;
 import com.consorcio.reservas.response.ResponseError;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.util.List;
+import java.util.ArrayList;
+
 public class ReservasService {
 
     @Autowired
@@ -22,10 +25,14 @@ public class ReservasService {
             reservaRepository.save(reserva);
             ResponseData responseData = new ResponseData();
             responseData.setMessage("Reserva creada correctamente");
-            response.setData(responseData);
+            List<ResponseData> dataList = new ArrayList<>();
+            dataList.add(responseData);
+            response.setData(dataList);
         } catch (Exception e){
             responseError.setMessage(e.getMessage());
-            response.setErrors(responseError);
+            List<ResponseError> errorList = new ArrayList<>();
+            errorList.add(responseError);
+            response.setErrors(errorList);
         }
 
         return response;

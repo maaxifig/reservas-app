@@ -61,19 +61,27 @@ public class UserService {
             usuarioRepository.save(user);
             ResponseData responseData = new ResponseData();
             responseData.setMessage("Usuario creado correctamente");
-            response.setData(responseData);
+            List<ResponseData> dataList = new ArrayList<>();
+            dataList.add(responseData);
+            response.setData(dataList);
 
         }catch (MongoWriteException e){
             logger.error(e.getMessage());
             responseError.setMessage(e.getMessage());
-            response.setErrors(responseError);
+            List<ResponseError> errorList = new ArrayList<>();
+            errorList.add(responseError);
+            response.setErrors(errorList);
         }catch (MongoSocketException e){
             logger.error(e.getMessage());
             responseError.setMessage(e.getMessage());
-            response.setErrors(responseError);
+            List<ResponseError> errorList = new ArrayList<>();
+            errorList.add(responseError);
+            response.setErrors(errorList);
         } catch (Exception e){
             responseError.setMessage(e.getMessage());
-            response.setErrors(responseError);
+            List<ResponseError> errorList = new ArrayList<>();
+            errorList.add(responseError);
+            response.setErrors(errorList);
         }
 
         return response;
@@ -92,17 +100,52 @@ public class UserService {
             usuarioActual.setMail(user.getMail());
             usuarioRepository.save(usuarioActual);
             responseData.setMessage("Usuario actualizado correctamente");
-            response.setData(responseData);
+            List<ResponseData> dataList = new ArrayList<>();
+            dataList.add(responseData);
+            response.setData(dataList);
         }else{
 
             responseError.setMessage("El usuario no existe");
-            response.setErrors(responseError);
+            List<ResponseError> errorList = new ArrayList<>();
+            errorList.add(responseError);
+            response.setErrors(errorList);
         }
         return response;
     }
 
-    public void deleteUser (Usuario usuario) {
+    public Response deleteUser (String email) {
         //usuario.delete()
+        Response res = new Response();
+        ResponseData data = new ResponseData();
+
+        try{
+            Optional<Usuario> user = usuarioRepository.findByMail(email);
+            if(user.isPresent()){
+                Usuario deletedUser = user.get();
+                usuarioRepository.delete(deletedUser);
+
+                data.setMessage("Usuario eliminado correctamente");
+                List<ResponseData> dataList = new ArrayList<>();
+                dataList.add(data);
+                res.setData(dataList);
+            } else {
+                ResponseError error = new ResponseError();
+                error.setMessage("El usuario no existe");
+                List<ResponseError> errorList = new ArrayList<>();
+                errorList.add(error);
+                res.setErrors(errorList);
+            }
+
+        } catch (Exception e) {
+            ResponseError error = new ResponseError();
+            error.setMessage(e.getMessage());
+
+            List<ResponseError> errorList = new ArrayList<>();
+            errorList.add(error);
+            res.setErrors(errorList);
+        }
+
+        return res;
     }
 
     public Response login (String json){
@@ -118,17 +161,24 @@ public class UserService {
                 Usuario userFound = user.get();
                 if(userFound.validatePassword(jsonParsed.path(("password")).asText())){
                     data.setMessage("Logueado correctamente");
-                    resp.setData(data);
+
+                    List<ResponseData> dataList = new ArrayList<>();
+                    dataList.add(data);
+                    resp.setData(dataList);
                 } else {
                     error.setMessage("Usuario o contraseña incorrecto");
-                    resp.setErrors(error);
+                    List<ResponseError> errorList = new ArrayList<>();
+                    errorList.add(error);
+                    resp.setErrors(errorList);
                 }
 
             }
 
         } catch (IOException e){
             error.setMessage("Hubo un error desconocido");
-            resp.setErrors(error);
+            List<ResponseError> errorList = new ArrayList<>();
+            errorList.add(error);
+            resp.setErrors(errorList);
         }
 
 
